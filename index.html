@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>脳トレ探偵</title>
+<style>
+  :root {
+    --bg: #FFF8ED;
+    --primary: #D97B29;
+    --primary-dark: #B8621E;
+    --secondary: #4A6D7C;
+    --success: #4CAF7D;
+    --danger: #E4635A;
+    --card-bg: #FFFFFF;
+    --text-main: #3A2E26;
+    --text-sub: #8A7A6D;
+    --border: #EAD9C4;
+    --gold: #E8B94A;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    min-height: 100vh;
+  }
+
+  #app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  .app-title {
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    margin: 0 0 4px;
+  }
+
+  .sub-title {
+    font-size: 17px;
+    color: var(--text-sub);
+    text-align: center;
+    margin: 0 0 24px;
+  }
+
+  .status-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .status-label { color: var(--text-sub); font-size: 17px; }
+  .status-value { font-weight: 700; font-size: 19px; }
+  .status-value.highlight { color: var(--primary); }
+
+  .progress-track {
+    width: 100%;
+    height: 16px;
+    background: var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 4px 0;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 16px;
+    transition: width 0.4s ease;
+  }
+
+  .exp-text {
+    font-size: 14px;
+    color: var(--text-sub);
+    margin: 6px 0 14px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 12px 0;
+  }
+
+  .big-button {
+    display: block;
+    width: 100%;
+    padding: 20px;
+    font-size: 21px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--primary);
+    border: none;
+    border-radius: 16px;
+    min-height: 64px;
+    cursor: pointer;
+    margin-bottom: 12px;
+    transition: opacity 0.15s;
+  }
+  .big-button:active { opacity: 0.8; }
+  .big-button:disabled { opacity: 0.5; }
+  .big-button.secondary { background: var(--secondary); }
+
+  .footer-note {
+    font-size: 14px;
+    color: var(--text-sub);
+    text-align: center;
+  }
+
+  .instruction {
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .countdown {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--primary);
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .progress-text {
+    font-size: 17px;
+    color: var(--text-sub);
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .item-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .item-card {
+    background: var(--card-bg);
+    border: 3px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    width: 46%;
+    text-align: center;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    cursor: pointer;
+    transition: opacity 0.15s, border-color 0.2s;
+  }
+  .item-card:active { opacity: 0.7; }
+  .item-card.static { cursor: default; }
+  .item-card.selected { border-color: var(--primary); }
+  .item-card.correct { border-color: var(--success); }
+  .item-card.wrong { border-color: var(--danger); }
+
+  .item-emoji { font-size: 48px; margin-bottom: 8px; }
+  .item-label { font-size: 18px; font-weight: 600; }
+
+  .result-title {
+    font-size: 32px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .result-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+  }
+  .result-label { color: var(--text-sub); font-size: 17px; }
+  .result-value { font-weight: 700; font-size: 19px; }
+  .result-value.highlight { color: var(--primary); }
+
+  .message-card {
+    background: var(--gold);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 24px;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ホーム画面 -->
+  <div class="screen active" id="screen-home">
+    <div class="app-title">🔍 脳トレ探偵</div>
+    <div class="sub-title">今日の事件を解決しよう</div>
+
+    <div class="status-card">
+      <div class="status-row">
+        <span class="status-label">現在の称号</span>
+        <span class="status-value highlight" id="home-title">Lv.1 見習い探偵</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="home-progress-fill" style="width:0%"></div></div>
+      <div class="exp-text" id="home-exp-text">次のレベルまで 100 EXP</div>
+      <div class="divider"></div>
+      <div class="status-row">
+        <span class="status-label">連続プレイ日数</span>
+        <span class="status-value">🔥 <span id="home-streak">0</span>日</span>
+      </div>
+    </div>
+
+    <button class="big-button" id="start-button" onclick="startGame()">今日の脳トレを始める</button>
+    <div class="footer-note">1回3分。毎日コツコツ続けよう。</div>
+  </div>
+
+  <!-- 記憶フェーズ画面 -->
+  <div class="screen" id="screen-memorize">
+    <div class="instruction">これから出てくるものを覚えてください</div>
+    <div class="countdown" id="countdown-text">5</div>
+    <div class="item-grid" id="memorize-grid"></div>
+  </div>
+
+  <!-- 出題画面 -->
+  <div class="screen" id="screen-quiz">
+    <div class="progress-text" id="quiz-progress-text">問題 1 / 3</div>
+    <div class="instruction">さっき出てきたのはどれ？</div>
+    <div class="item-grid" id="quiz-grid"></div>
+  </div>
+
+  <!-- 結果画面 -->
+  <div class="screen" id="screen-result">
+    <div class="result-title">🕵️ 事件解決！</div>
+    <div class="result-card">
+      <div class="result-row"><span class="result-label">正解数</span><span class="result-value" id="result-correct">0 / 0</span></div>
+      <div class="result-row"><span class="result-label">スコア</span><span class="result-value" id="result-score">0 点</span></div>
+      <div class="result-row"><span class="result-label">脳年齢</span><span class="result-value highlight" id="result-brainage">0 歳</span></div>
+      <div class="result-row"><span class="result-label">獲得経験値</span><span class="result-value" id="result-exp">+0 EXP</span></div>
+    </div>
+    <div class="message-card" id="result-message"></div>
+    <button class="big-button" onclick="goHome()">ホームに戻る</button>
+  </div>
+
+</div>
+
+<script>
+// ============ データ定義 ============
+
+var ALL_ITEMS = [
+  { id: 'apple', emoji: '🍎', label: 'りんご' },
+  { id: 'key', emoji: '🔑', label: '鍵' },
+  { id: 'hat', emoji: '🎩', label: '帽子' },
+  { id: 'umbrella', emoji: '☂️', label: '傘' },
+  { id: 'clock', emoji: '⏰', label: '時計' },
+  { id: 'glasses', emoji: '👓', label: '眼鏡' },
+  { id: 'bag', emoji: '👜', label: 'かばん' },
+  { id: 'shoe', emoji: '👞', label: '靴' },
+  { id: 'book', emoji: '📕', label: '本' },
+  { id: 'flower', emoji: '🌷', label: '花' },
+  { id: 'cup', emoji: '☕', label: 'カップ' },
+  { id: 'candle', emoji: '🕯️', label: 'ろうそく' },
+  { id: 'letter', emoji: '✉️', label: '手紙' },
+  { id: 'coin', emoji: '🪙', label: '硬貨' },
+  { id: 'camera', emoji: '📷', label: 'カメラ' },
+  { id: 'lamp', emoji: '💡', label: 'ランプ' },
+  { id: 'scissors', emoji: '✂️', label: 'はさみ' },
+  { id: 'ring', emoji: '💍', label: '指輪' },
+  { id: 'phone', emoji: '📱', label: '電話' },
+  { id: 'boat', emoji: '⛵', label: '船' }
+];
+
+var LEVEL_TITLES = [
+  { level: 1, title: '見習い探偵' },
+  { level: 2, title: '駆け出し探偵' },
+  { level: 3, title: '観察上手な探偵' },
+  { level: 4, title: '記憶の助手' },
+  { level: 5, title: '一人前の探偵' },
+  { level: 6, title: '鋭い目の探偵' },
+  { level: 7, title: 'ベテラン探偵' },
+  { level: 8, title: '名推理の探偵' },
+  { level: 9, title: '記憶の達人' },
+  { level: 10, title: '記憶の名探偵' },
+  { level: 11, title: '伝説の観察者' },
+  { level: 12, title: '知恵の探偵' },
+  { level: 13, title: '洞察の達人' },
+  { level: 14, title: '最上級探偵' },
+  { level: 15, title: '記憶の巨匠' },
+  { level: 16, title: '頭脳明晰探偵' },
+  { level: 17, title: '不動の名探偵' },
+  { level: 18, title: '究極の観察者' },
+  { level: 19, title: '殿堂入り探偵' },
+  { level: 20, title: '伝説の脳トレ王' }
+];
+
+var DIFFICULTY_CONFIG = {
+  beginner: { itemCount: 3, questionCount: 3, showSeconds: 5 },
+  normal: { itemCount: 4, questionCount: 4, showSeconds: 4 },
+  advanced: { itemCount: 5, questionCount: 5, showSeconds: 3 }
+};
+
+var DEFAULT_PLAYER_DATA = {
+  level: 1,
+  exp: 0,
+  totalExp: 0,
+  streakDays: 0,
+  lastPlayedDate: null,
+  bestScore: 0,
+  difficulty: 'beginner',
+  recentAccuracyHistory: []
+};
+
+var STORAGE_KEY = 'brain_detective_player_data';
+
+// ============ ゲーム状態 ============
+
+var playerData = loadPlayerData();
+var gameState = {
+  displayItems: [],
+  questions: [],
+  currentQuestionIndex: 0,
+  correctCount: 0,
+  selectedItemId: null,
+  countdown: 0,
+  countdownTimer: null,
+  difficulty: 'beginner'
+};
+
+// ============ 保存・読み込み ============
+
+function loadPlayerData() {
+  try {
+    var json = localStorage.getItem(STORAGE_KEY);
+    if (!json) return JSON.parse(JSON.stringify(DEFAULT_PLAYER_DATA));
+    var parsed = JSON.parse(json);
+    var merged = JSON.parse(JSON.stringify(DEFAULT_PLAYER_DATA));
+    for (var key in parsed) { merged[key] = parsed[key]; }
+    return merged;
+  } catch (e) {
+    return JSON.parse(JSON.stringify(DEFAULT_PLAYER_DATA));
+  }
+}
+
+function savePlayerData() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(playerData));
+  } catch (e) {
+    console.warn('保存に失敗しました', e);
+  }
+}
+
+function getTodayString() {
+  var now = new Date();
+  return now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+}
+function getYesterdayString() {
+  var now = new Date();
+  now.setDate(now.getDate() - 1);
+  return now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate());
+}
+function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+function updateStreak() {
+  var today = getTodayString();
+  var yesterday = getYesterdayString();
+
+  if (playerData.lastPlayedDate === today) return;
+
+  if (playerData.lastPlayedDate === yesterday) {
+    playerData.streakDays += 1;
+  } else {
+    playerData.streakDays = 1;
+  }
+  playerData.lastPlayedDate = today;
+}
+
+// ============ レベル計算 ============
+
+function getRequiredExpForLevel(level) {
+  return Math.floor(100 * level * (1 + level * 0.08));
+}
+
+function getTitleForLevel(level) {
+  for (var i = 0; i < LEVEL_TITLES.length; i++) {
+    if (LEVEL_TITLES[i].level === level) return LEVEL_TITLES[i].title;
+  }
+  if (level > 20) return '殿堂入り探偵・伝説級';
+  return '見習い探偵';
+}
+
+function calculateLevelFromTotalExp(totalExp) {
+  var level = 1;
+  var remaining = totalExp;
+  while (remaining >= getRequiredExpForLevel(level)) {
+    remaining -= getRequiredExpForLevel(level);
+    level += 1;
+    if (level > 99) break;
+  }
+  return { level: level, expInLevel: remaining };
+}
+
+// ============ ゲームロジック ============
+
+function shuffle(array) {
+  var copy = array.slice();
+  for (var i = copy.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+  }
+  return copy;
+}
+
+function generateDisplayItems(difficulty) {
+  var config = DIFFICULTY_CONFIG[difficulty];
+  return shuffle(ALL_ITEMS).slice(0, config.itemCount);
+}
+
+function generateQuestions(displayItems, difficulty) {
+  var config = DIFFICULTY_CONFIG[difficulty];
+  var questionCount = Math.min(config.questionCount, displayItems.length);
+  var targets = shuffle(displayItems).slice(0, questionCount);
+
+  return targets.map(function(correctItem) {
+    var notShown = ALL_ITEMS.filter(function(item) {
+      return !displayItems.some(function(d) { return d.id === item.id; });
+    });
+    var dummies = shuffle(notShown).slice(0, 3);
+    var choices = shuffle([correctItem].concat(dummies));
+    return { correctItem: correctItem, choices: choices };
+  });
+}
+
+function adjustDifficulty(currentDifficulty, recentAccuracyHistory) {
+  if (recentAccuracyHistory.length === 0) return currentDifficulty;
+  var recent = recentAccuracyHistory.slice(-2);
+  var avg = recent.reduce(function(sum, v) { return sum + v; }, 0) / recent.length;
+  var order = ['beginner', 'normal', 'advanced'];
+  var currentIndex = order.indexOf(currentDifficulty);
+
+  if (avg >= 0.85 && currentIndex < order.length - 1) return order[currentIndex + 1];
+  if (avg < 0.5 && currentIndex > 0) return order[currentIndex - 1];
+  return currentDifficulty;
+}
+
+function calculateBrainAge(accuracy, difficulty) {
+  var baseAge = difficulty === 'advanced' ? 20 : difficulty === 'normal' ? 30 : 40;
+  var penalty = Math.round((1 - accuracy) * 40);
+  var age = baseAge + penalty;
+  return Math.max(20, Math.min(80, age));
+}
+
+function calculateEarnedExp(correctCount, totalCount, difficulty) {
+  var mult = difficulty === 'advanced' ? 2 : difficulty === 'normal' ? 1.5 : 1;
+  return Math.round(correctCount * 15 * mult);
+}
+
+function getEncouragementMessage(accuracy) {
+  if (accuracy === 1) return '素晴らしい！全問正解です。今日も冴えていますね！';
+  if (accuracy >= 0.7) return '昨日より記憶力が5%アップしました。この調子で続けましょう！';
+  if (accuracy >= 0.4) return 'よく頑張りました。毎日続けることが1番の近道です。';
+  return '今日は難しい事件でしたね。明日また挑戦しましょう！';
+}
+
+// ============ 画面切り替え ============
+
+function showScreen(id) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) {
+    screens[i].classList.remove('active');
+  }
+  document.getElementById(id).classList.add('active');
+}
+
+// ============ ホーム画面描画 ============
+
+function renderHome() {
+  var title = getTitleForLevel(playerData.level);
+  var requiredExp = getRequiredExpForLevel(playerData.level);
+  var percent = requiredExp > 0 ? Math.min(100, Math.round((playerData.exp / requiredExp) * 100)) : 0;
+
+  document.getElementById('home-title').textContent = 'Lv.' + playerData.level + ' ' + title;
+  document.getElementById('home-progress-fill').style.width = percent + '%';
+  document.getElementById('home-exp-text').textContent = '次のレベルまで ' + Math.max(0, requiredExp - playerData.exp) + ' EXP';
+  document.getElementById('home-streak').textContent = playerData.streakDays;
+
+  showScreen('screen-home');
+}
+
+function goHome() {
+  renderHome();
+}
+
+// ============ ゲーム開始・進行 ============
+
+function startGame() {
+  gameState.difficulty = playerData.difficulty;
+  gameState.displayItems = generateDisplayItems(gameState.difficulty);
+  gameState.questions = generateQuestions(gameState.displayItems, gameState.difficulty);
+  gameState.currentQuestionIndex = 0;
+  gameState.correctCount = 0;
+  gameState.selectedItemId = null;
+  gameState.countdown = DIFFICULTY_CONFIG[gameState.difficulty].showSeconds;
+
+  renderMemorizeScreen();
+}
+
+function renderMemorizeScreen() {
+  document.getElementById('countdown-text').textContent = gameState.countdown;
+
+  var grid = document.getElementById('memorize-grid');
+  grid.innerHTML = '';
+  gameState.displayItems.forEach(function(item) {
+    var card = document.createElement('div');
+    card.className = 'item-card static';
+    card.innerHTML = '<div class="item-emoji">' + item.emoji + '</div><div class="item-label">' + item.label + '</div>';
+    grid.appendChild(card);
+  });
+
+  showScreen('screen-memorize');
+
+  clearTimeout(gameState.countdownTimer);
+  tickCountdown();
+}
+
+function tickCountdown() {
+  if (gameState.countdown <= 0) {
+    renderQuizScreen();
+    return;
+  }
+  gameState.countdownTimer = setTimeout(function() {
+    gameState.countdown -= 1;
+    document.getElementById('countdown-text').textContent = gameState.countdown;
+    tickCountdown();
+  }, 1000);
+}
+
+function renderQuizScreen() {
+  var q = gameState.questions[gameState.currentQuestionIndex];
+  document.getElementById('quiz-progress-text').textContent =
+    '問題 ' + (gameState.currentQuestionIndex + 1) + ' / ' + gameState.questions.length;
+
+  var grid = document.getElementById('quiz-grid');
+  grid.innerHTML = '';
+
+  q.choices.forEach(function(choice) {
+    var card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = '<div class="item-emoji">' + choice.emoji + '</div><div class="item-label">' + choice.label + '</div>';
+    card.onclick = function() { handleAnswer(choice.id); };
+    grid.appendChild(card);
+  });
+
+  showScreen('screen-quiz');
+}
+
+function handleAnswer(choiceId) {
+  var q = gameState.questions[gameState.currentQuestionIndex];
+  var isCorrect = choiceId === q.correctItem.id;
+  gameState.selectedItemId = choiceId;
+
+  if (isCorrect) gameState.correctCount += 1;
+
+  // 正解・不正解を色で表示
+  var cards = document.querySelectorAll('#quiz-grid .item-card');
+  var choicesArr = q.choices;
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].onclick = null;
+    if (choicesArr[i].id === q.correctItem.id) {
+      cards[i].classList.add('correct');
+    } else if (choicesArr[i].id === choiceId) {
+      cards[i].classList.add('wrong');
+    }
+  }
+
+  setTimeout(function() {
+    var nextIndex = gameState.currentQuestionIndex + 1;
+    if (nextIndex < gameState.questions.length) {
+      gameState.currentQuestionIndex = nextIndex;
+      gameState.selectedItemId = null;
+      renderQuizScreen();
+    } else {
+      finishGame();
+    }
+  }, 1000);
+}
+
+function finishGame() {
+  var totalCount = gameState.questions.length;
+  var accuracy = totalCount > 0 ? gameState.correctCount / totalCount : 0;
+  var difficulty = gameState.difficulty;
+
+  var brainAge = calculateBrainAge(accuracy, difficulty);
+  var earnedExp = calculateEarnedExp(gameState.correctCount, totalCount, difficulty);
+  var score = gameState.correctCount * 100;
+
+  updateStreak();
+
+  var newTotalExp = playerData.totalExp + earnedExp;
+  var levelResult = calculateLevelFromTotalExp(newTotalExp);
+
+  playerData.recentAccuracyHistory.push(accuracy);
+  if (playerData.recentAccuracyHistory.length > 5) {
+    playerData.recentAccuracyHistory = playerData.recentAccuracyHistory.slice(-5);
+  }
+
+  playerData.difficulty = adjustDifficulty(playerData.difficulty, playerData.recentAccuracyHistory);
+  playerData.level = levelResult.level;
+  playerData.exp = levelResult.expInLevel;
+  playerData.totalExp = newTotalExp;
+  playerData.bestScore = Math.max(playerData.bestScore, score);
+
+  savePlayerData();
+
+  document.getElementById('result-correct').textContent = gameState.correctCount + ' / ' + totalCount;
+  document.getElementById('result-score').textContent = score + ' 点';
+  document.getElementById('result-brainage').textContent = brainAge + ' 歳';
+  document.getElementById('result-exp').textContent = '+' + earnedExp + ' EXP';
+  document.getElementById('result-message').textContent = getEncouragementMessage(accuracy);
+
+  showScreen('screen-result');
+}
+
+// ============ 初期化 ============
+
+renderHome();
+</script>
+
+</body>
+</html>
