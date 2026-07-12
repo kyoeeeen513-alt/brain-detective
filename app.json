@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "脳トレ探偵",
+    "slug": "brain-detective",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#FFF3E0"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.brain.detective"
+    },
+    "android": {
+      "package": "com.brain.detective",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFF3E0"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
